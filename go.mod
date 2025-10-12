@@ -1,4 +1,4 @@
-module github.com/ismaildedec/golang-product-app.git
+module golang-product-app.git
 
 go 1.24.4
 
