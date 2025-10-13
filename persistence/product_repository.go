@@ -9,7 +9,7 @@ import (
 )
 
 type IProductRepository interface {
-	GetAllProduct() domain.Product
+	GetAllProduct() []domain.Product
 }
 
 type ProductRepository struct {
