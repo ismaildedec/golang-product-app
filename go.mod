@@ -5,7 +5,6 @@ go 1.24.4
 require (
 	github.com/jackc/pgx/v4 v4.18.3
 	github.com/labstack/gommon v0.4.2
-	gopkg.in/go-playground/assert.v1 v1.2.1
 )
 
 require golang.org/x/net v0.40.0 // indirect
