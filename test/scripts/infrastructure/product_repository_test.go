@@ -7,7 +7,9 @@ import (
 	"testing"
 
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/stretchr/testify/assert"
 	"golang-product-app.git/common/postgresql"
+	"golang-product-app.git/domain"
 	"golang-product-app.git/persistence"
 )
 
@@ -29,10 +31,10 @@ func TestMain(m *testing.M) {
 	})
 
 	productRepository = persistence.NewProductRepository(dbPool)
-	fmt.Println("Before all test")
-	exitcode := m.Run()
-	fmt.Println("After all test")
-	os.Exit(exitcode)
+	fmt.Println("Before all tests")
+	exitCode := m.Run()
+	fmt.Println("After all tests")
+	os.Exit(exitCode)
 }
 
 func setup(ctx context.Context, dbPool *pgxpool.Pool) {
@@ -45,7 +47,42 @@ func clear(ctx context.Context, dbPool *pgxpool.Pool) {
 
 func TestGetAllProducts(t *testing.T) {
 	setup(ctx, dbPool)
-	fmt.Println("TestGetAllProducts")
-	clear(ctx, dbPool)
 
+	expectedProducts := []domain.Product{
+		{
+			Id:       1,
+			Name:     "AirFryer",
+			Price:    3000.0,
+			Discount: 22.0,
+			Store:    "ABC TECH",
+		},
+		{
+			Id:       2,
+			Name:     "Ütü",
+			Price:    1500.0,
+			Discount: 10.0,
+			Store:    "ABC TECH",
+		},
+		{
+			Id:       3,
+			Name:     "Çamaşır Makinesi",
+			Price:    10000.0,
+			Discount: 15.0,
+			Store:    "ABC TECH",
+		},
+		{
+			Id:       4,
+			Name:     "Lambader",
+			Price:    2000.0,
+			Discount: 0.0,
+			Store:    "Dekorasyon Sarayı",
+		},
+	}
+	t.Run("GetAllProducts", func(t *testing.T) {
+		actualProducts := productRepository.GetAllProduct()
+		assert.Equal(t, 4, len(actualProducts))
+		assert.Equal(t, expectedProducts, actualProducts)
+	})
+
+	clear(ctx, dbPool)
 }
