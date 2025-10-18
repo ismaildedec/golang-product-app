@@ -13,9 +13,10 @@ import (
 
 var productRepository persistence.IProductRepository
 var dbPool *pgxpool.Pool
+var ctx context.Context
 
 func TestMain(m *testing.M) {
-	ctx := context.Background()
+	ctx = context.Background()
 
 	dbPool = postgresql.GetConnectionPool(ctx, postgresql.Config{
 		Host:                  "localhost",
@@ -34,7 +35,17 @@ func TestMain(m *testing.M) {
 	os.Exit(exitcode)
 }
 
+func setup(ctx context.Context, dbPool *pgxpool.Pool) {
+	TestDataInitialize(ctx, dbPool)
+}
+
+func clear(ctx context.Context, dbPool *pgxpool.Pool) {
+	TruncateTestData(ctx, dbPool)
+}
+
 func TestGetAllProducts(t *testing.T) {
-	fmt.Println("productRepository")
+	setup(ctx, dbPool)
+	fmt.Println("TestGetAllProducts")
+	clear(ctx, dbPool)
 
 }
