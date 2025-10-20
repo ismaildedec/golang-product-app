@@ -5,10 +5,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/jackc/pgx"
+	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/labstack/gommon/log"
 	"golang-product-app.git/domain"
+	"golang-product-app.git/persistence/common"
 )
 
 type IProductRepository interface {
@@ -35,7 +36,7 @@ func (productRepository *ProductRepository) GetAllProduct() []domain.Product {
 	productRows, err := productRepository.dbPool.Query(ctx, "Select * from products ")
 
 	if err != nil {
-		log.Error("Tüm ürünler alınırken hata oluştu %v", err)
+		log.Errorf("Tüm ürünler alınırken hata oluştu %v", err)
 		return []domain.Product{}
 	}
 
@@ -50,7 +51,7 @@ func (productRepository *ProductRepository) GetAllProductsByStore(storeName stri
 	productRows, err := productRepository.dbPool.Query(ctx, getProductsByStoreNameSql, storeName)
 
 	if err != nil {
-		log.Error("Error while getting all products %v", err)
+		log.Errorf("Error while getting all products %v", err)
 		return []domain.Product{}
 	}
 	return extractProductsFromRows(productRows)
@@ -94,8 +95,10 @@ func (productRepository *ProductRepository) AddProduct(product domain.Product) e
 
 func (productRepository *ProductRepository) GetById(productId int64) (domain.Product, error) {
 	ctx := context.Background()
-	getByIdSql := `Select * from products where id =$1`
-	QueryRow := productRepository.dbPool.QueryRow(ctx, getByIdSql, productId)
+
+	getByIdSql := `Select * from products where id = $1`
+
+	queryRow := productRepository.dbPool.QueryRow(ctx, getByIdSql, productId)
 
 	var id int64
 	var name string
@@ -103,11 +106,15 @@ func (productRepository *ProductRepository) GetById(productId int64) (domain.Pro
 	var discount float32
 	var store string
 
-	scanErr := QueryRow.Scan(&id, &name, &price, &discount, &store)
+	scanErr := queryRow.Scan(&id, &name, &price, &discount, &store)
 
+	if scanErr != nil && scanErr.Error() == common.NOT_FOUND {
+		return domain.Product{}, errors.New(fmt.Sprintf("Product not found with id %d", productId))
+	}
 	if scanErr != nil {
 		return domain.Product{}, errors.New(fmt.Sprintf("Error while getting product with id %d", productId))
 	}
+
 	return domain.Product{
 		Id:       id,
 		Name:     name,
